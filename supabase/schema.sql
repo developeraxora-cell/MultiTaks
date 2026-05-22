@@ -15,12 +15,18 @@ create table if not exists public.tasks (
   title       text not null,
   description text,
   goal        text,                              -- meta libre, ej. "5 días/semana"
+  start_time  time,                              -- hora de inicio (opcional)
+  end_time    time,                              -- hora de fin del rango (opcional)
   is_active   boolean not null default true,     -- desactivar = ocultar del grid, conserva historial
   deleted_at  timestamptz,                       -- soft delete: conserva logs para reportes
   sort_order  integer not null default 0,        -- orden de filas en el grid
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- Migración para bases ya creadas (idempotente).
+alter table public.tasks add column if not exists start_time time;
+alter table public.tasks add column if not exists end_time   time;
 
 -- ----------------------------------------------------------------------------
 --  Tabla: task_logs (cumplimiento diario, 1 fila por (tarea, fecha))

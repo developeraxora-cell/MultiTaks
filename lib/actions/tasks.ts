@@ -21,8 +21,8 @@ export async function createTask(formData: FormData): Promise<void> {
 
   const { error } = await getSupabase().from("tasks").insert({
     title,
-    description: str(formData.get("description")) || null,
-    goal: str(formData.get("goal")) || null,
+    start_time: str(formData.get("start_time")) || null,
+    end_time: str(formData.get("end_time")) || null,
   });
   if (error) throw new Error(error.message);
   revalidateAll();
@@ -39,8 +39,8 @@ export async function updateTask(formData: FormData): Promise<void> {
     .from("tasks")
     .update({
       title,
-      description: str(formData.get("description")) || null,
-      goal: str(formData.get("goal")) || null,
+      start_time: str(formData.get("start_time")) || null,
+      end_time: str(formData.get("end_time")) || null,
     })
     .eq("id", id);
   if (error) throw new Error(error.message);

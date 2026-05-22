@@ -179,7 +179,13 @@ export default async function TrackerPage({
         nextDate={nextDate}
       />
       <HabitGrid
-        tasks={tasks.map((t) => ({ id: t.id, title: t.title, goal: t.goal }))}
+        tasks={tasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          goal: t.goal,
+          start_time: t.start_time,
+          end_time: t.end_time,
+        }))}
         groups={groups}
         logMap={logMap}
       />

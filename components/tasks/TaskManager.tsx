@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Pencil, Trash2, RotateCcw, Eye, EyeOff, Plus, X } from "lucide-react";
+import { Pencil, Trash2, RotateCcw, Eye, EyeOff, Plus, X, Clock } from "lucide-react";
 import {
   createTask,
   updateTask,
@@ -9,7 +9,7 @@ import {
   softDeleteTask,
   restoreTask,
 } from "@/lib/actions/tasks";
-import type { Task } from "@/lib/types";
+import { formatTimeRange, type Task } from "@/lib/types";
 
 interface TaskManagerProps {
   tasks: Task[];
@@ -43,16 +43,22 @@ export function TaskManager({ tasks, deletedTasks }: TaskManagerProps) {
             placeholder="Título (ej. Hacer ejercicio)"
             className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm sm:col-span-2"
           />
-          <input
-            name="goal"
-            placeholder="Meta (ej. 5 días/semana)"
-            className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
-          />
-          <input
-            name="description"
-            placeholder="Descripción (opcional)"
-            className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
-          />
+          <label className="flex items-center gap-2 text-xs text-muted">
+            Desde
+            <input
+              name="start_time"
+              type="time"
+              className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground"
+            />
+          </label>
+          <label className="flex items-center gap-2 text-xs text-muted">
+            Hasta
+            <input
+              name="end_time"
+              type="time"
+              className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground"
+            />
+          </label>
           <button
             type="submit"
             disabled={pending}
@@ -86,18 +92,24 @@ export function TaskManager({ tasks, deletedTasks }: TaskManagerProps) {
                 defaultValue={task.title}
                 className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm sm:col-span-2"
               />
-              <input
-                name="goal"
-                defaultValue={task.goal ?? ""}
-                placeholder="Meta"
-                className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
-              />
-              <input
-                name="description"
-                defaultValue={task.description ?? ""}
-                placeholder="Descripción"
-                className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
-              />
+              <label className="flex items-center gap-2 text-xs text-muted">
+                Desde
+                <input
+                  name="start_time"
+                  type="time"
+                  defaultValue={task.start_time?.slice(0, 5) ?? ""}
+                  className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-xs text-muted">
+                Hasta
+                <input
+                  name="end_time"
+                  type="time"
+                  defaultValue={task.end_time?.slice(0, 5) ?? ""}
+                  className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground"
+                />
+              </label>
               <div className="flex gap-2 sm:col-span-2">
                 <button
                   type="submit"
@@ -130,9 +142,10 @@ export function TaskManager({ tasks, deletedTasks }: TaskManagerProps) {
                     </span>
                   )}
                 </div>
-                {task.goal && <p className="text-xs text-muted">Meta: {task.goal}</p>}
-                {task.description && (
-                  <p className="truncate text-xs text-muted">{task.description}</p>
+                {formatTimeRange(task.start_time, task.end_time) && (
+                  <p className="flex items-center gap-1 text-xs text-accent">
+                    <Clock size={12} /> {formatTimeRange(task.start_time, task.end_time)}
+                  </p>
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-1">

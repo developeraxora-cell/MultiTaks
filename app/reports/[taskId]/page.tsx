@@ -5,6 +5,7 @@ import { SetupNotice } from "@/components/SetupNotice";
 import { StatCard, ProgressBar } from "@/components/reports/StatCard";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getTask, getLogsInRange } from "@/lib/queries/tasks";
+import { formatTimeRange } from "@/lib/types";
 import { reportTaskPeriod } from "@/lib/reports/calc";
 import {
   monthName,
@@ -93,8 +94,11 @@ export default async function TaskReportPage({
 
       <div>
         <h1 className="text-xl font-semibold">{task.title}</h1>
-        {task.goal && <p className="text-sm text-muted">Meta: {task.goal}</p>}
-        {task.description && <p className="text-sm text-muted">{task.description}</p>}
+        {formatTimeRange(task.start_time, task.end_time) && (
+          <p className="text-sm text-accent">
+            Horario: {formatTimeRange(task.start_time, task.end_time)}
+          </p>
+        )}
         {task.deleted_at && (
           <span className="mt-1 inline-block rounded bg-surface-2 px-2 py-0.5 text-xs text-muted">
             eliminado · historial conservado

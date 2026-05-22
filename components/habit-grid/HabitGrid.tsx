@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { DayCell } from "@/lib/date";
-import { logKey, type LogMap } from "@/lib/types";
+import { formatTimeRange, logKey, type LogMap } from "@/lib/types";
 import { HabitCell } from "./HabitCell";
 
 export interface GridGroup {
@@ -9,8 +9,16 @@ export interface GridGroup {
   cells: DayCell[];
 }
 
+export interface GridTask {
+  id: string;
+  title: string;
+  goal: string | null;
+  start_time: string | null;
+  end_time: string | null;
+}
+
 interface HabitGridProps {
-  tasks: { id: string; title: string; goal: string | null }[];
+  tasks: GridTask[];
   groups: GridGroup[];
   logMap: LogMap;
 }
@@ -51,12 +59,6 @@ export function HabitGrid({ tasks, groups, logMap }: HabitGridProps) {
             >
               HÁBITOS DIARIOS
             </th>
-            <th
-              rowSpan={2}
-              className="border-b border-border bg-surface px-3 py-2 text-left align-bottom font-semibold text-muted"
-            >
-              METAS
-            </th>
             {groups.map((g, i) => (
               <th
                 key={`${g.label}-${i}`}
@@ -88,13 +90,15 @@ export function HabitGrid({ tasks, groups, logMap }: HabitGridProps) {
         <tbody>
           {tasks.map((task) => (
             <tr key={task.id} className="group">
-              <td className="sticky left-0 z-10 max-w-36 truncate sm:max-w-52 border-b border-border bg-surface px-3 py-1.5 text-right text-foreground">
-                <Link href={`/reports/${task.id}`} className="hover:text-accent" title={task.title}>
+              <td className="sticky left-0 z-10 max-w-44 sm:max-w-60 border-b border-border bg-surface px-3 py-1.5 text-right text-foreground">
+                <Link href={`/reports/${task.id}`} className="block truncate hover:text-accent" title={task.title}>
                   {task.title}
                 </Link>
-              </td>
-              <td className="border-b border-border px-3 py-1.5 text-xs text-muted">
-                {task.goal ?? ""}
+                {formatTimeRange(task.start_time, task.end_time) && (
+                  <span className="block text-[10px] leading-tight text-accent">
+                    {formatTimeRange(task.start_time, task.end_time)}
+                  </span>
+                )}
               </td>
               {groups.flatMap((g) =>
                 g.cells.map((c, idx) => (
