@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* Panel personal de productividad — tema oscuro azul-marino (ver imagen ref). */
+:root {
+  --background: #0f1623;
+  --surface: #161d2e;
+  --surface-2: #1b2538;
+  --border: #2a3550;
+  --foreground: #e8edf6;
+  --muted: #8a97b1;
+  --accent: #2dd4bf;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Scrollbar discreta para el grid con scroll horizontal. */
+.scroll-thin::-webkit-scrollbar { height: 10px; width: 10px; }
+.scroll-thin::-webkit-scrollbar-track { background: var(--surface); }
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
