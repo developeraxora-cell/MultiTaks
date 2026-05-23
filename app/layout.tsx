@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 import { Nav } from "@/components/Nav";
+import { getSession } from "@/lib/auth/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,23 +16,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hábitos · Panel de productividad",
-  description: "Seguimiento diario de hábitos con reportes de cumplimiento",
+  title: "Mentes Creadoras · Seguimiento de hábitos",
+  description: "Gestión y monitoreo de hábitos diarios con reportes de cumplimiento",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
+
   return (
     <html
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Nav />
-        <main className="flex-1">{children}</main>
+      <body className="min-h-full bg-background text-foreground">
+        {session && <Nav name={session.name} role={session.role} />}
+        <div className={session ? "lg:pl-64" : ""}>
+          <main className="min-h-screen">{children}</main>
+        </div>
+        <Toaster
+          theme="dark"
+          position="top-right"
+          richColors
+          toastOptions={{
+            style: {
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              color: "var(--foreground)",
+            },
+          }}
+        />
       </body>
     </html>
   );

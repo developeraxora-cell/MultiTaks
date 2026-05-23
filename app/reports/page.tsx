@@ -3,7 +3,9 @@ import { SetupNotice } from "@/components/SetupNotice";
 import { StatCard, ProgressBar } from "@/components/reports/StatCard";
 import { RankingChart } from "@/components/reports/RankingChart";
 import { ProductivityChart } from "@/components/reports/ProductivityChart";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/server";
 import {
   reportOverall,
   reportTaskRanking,
@@ -18,6 +20,8 @@ export const dynamic = "force-dynamic";
 export default async function ReportsPage() {
   if (!isSupabaseConfigured()) return <SetupNotice />;
 
+  const session = await requireUser();
+  const uid = session.userId;
   const today = todayKey();
   const d = parseKey(today);
   const year = d.getFullYear();
@@ -28,12 +32,12 @@ export default async function ReportsPage() {
   const yr = yearRange(year);
 
   const [day, week, month, yearOverall, ranking, dayProd] = await Promise.all([
-    reportOverall({ start: today, end: today }),
-    reportOverall(wk),
-    reportOverall(mo),
-    reportOverall(yr),
-    reportTaskRanking(mo),
-    reportDayProductivity(yr),
+    reportOverall(uid, { start: today, end: today }),
+    reportOverall(uid, wk),
+    reportOverall(uid, mo),
+    reportOverall(uid, yr),
+    reportTaskRanking(uid, mo),
+    reportDayProductivity(uid, yr),
   ]);
 
   const streaks = computeStreaks(dayProd);
@@ -48,8 +52,8 @@ export default async function ReportsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 px-4 py-6">
-      <h1 className="text-xl font-semibold">Reportes de cumplimiento</h1>
+    <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:px-6">
+      <PageHeader title="Reportes" subtitle="Tu cumplimiento por periodo" />
 
       {/* Cumplimiento general por periodo */}
       <section>

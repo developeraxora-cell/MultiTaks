@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Check } from "lucide-react";
 import { toggleLog } from "@/lib/actions/logs";
 
@@ -25,8 +26,10 @@ export function HabitCell({ taskId, date, color, completed }: HabitCellProps) {
     startTransition(async () => {
       try {
         await toggleLog(taskId, date, next);
-      } catch {
+        toast.success(next ? "Marcado como cumplido" : "Desmarcado", { duration: 1200 });
+      } catch (e) {
         setChecked(!next); // revertir
+        toast.error(e instanceof Error ? e.message : "No se pudo guardar");
       }
     });
   }

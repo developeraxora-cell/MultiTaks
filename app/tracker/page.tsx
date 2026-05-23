@@ -2,7 +2,9 @@ import { SetupNotice } from "@/components/SetupNotice";
 import { HabitGrid, type GridGroup } from "@/components/habit-grid/HabitGrid";
 import { AnnualSummary, type AnnualRow } from "@/components/habit-grid/AnnualSummary";
 import { ViewSwitcher, type ViewMode } from "@/components/habit-grid/ViewSwitcher";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/server";
 import { listActiveTasks, getLogsInRange, buildLogMap } from "@/lib/queries/tasks";
 import {
   addDays,
@@ -44,6 +46,7 @@ export default async function TrackerPage({
 }) {
   if (!isSupabaseConfigured()) return <SetupNotice />;
 
+  const session = await requireUser();
   const sp = await searchParams;
   const view = (["daily", "weekly", "monthly", "annual"].includes(sp.view ?? "")
     ? sp.view
@@ -56,7 +59,7 @@ export default async function TrackerPage({
   const day = anchorDate.getDate();
   const today = todayKey();
 
-  const tasks = await listActiveTasks();
+  const tasks = await listActiveTasks(session.userId);
 
   // ----- Vista anual: resumen tareas × meses -----
   if (view === "annual") {
@@ -102,6 +105,9 @@ export default async function TrackerPage({
 
     return (
       <div>
+        <div className="px-4 pt-6 sm:px-6">
+          <PageHeader title="Seguimiento" subtitle="Resumen anual por meses" />
+        </div>
         <ViewSwitcher
           view={view}
           date={anchor}
@@ -171,6 +177,9 @@ export default async function TrackerPage({
 
   return (
     <div>
+      <div className="px-4 pt-6 sm:px-6">
+        <PageHeader title="Seguimiento" subtitle="Marca el cumplimiento diario de tus hábitos" />
+      </div>
       <ViewSwitcher
         view={view}
         date={anchor}

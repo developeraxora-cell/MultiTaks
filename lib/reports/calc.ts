@@ -53,8 +53,9 @@ export async function reportTaskPeriod(
   };
 }
 
-export async function reportOverall(range: DateRange): Promise<OverallReport> {
+export async function reportOverall(userId: string, range: DateRange): Promise<OverallReport> {
   const { data, error } = await getSupabase().rpc("report_overall", {
+    p_user_id: userId,
     p_start: range.start,
     p_end: range.end,
   });
@@ -67,8 +68,9 @@ export async function reportOverall(range: DateRange): Promise<OverallReport> {
   };
 }
 
-export async function reportTaskRanking(range: DateRange): Promise<TaskRankingRow[]> {
+export async function reportTaskRanking(userId: string, range: DateRange): Promise<TaskRankingRow[]> {
   const { data, error } = await getSupabase().rpc("report_task_ranking", {
+    p_user_id: userId,
     p_start: range.start,
     p_end: range.end,
   });
@@ -82,8 +84,9 @@ export async function reportTaskRanking(range: DateRange): Promise<TaskRankingRo
   }));
 }
 
-export async function reportDayProductivity(range: DateRange): Promise<DayProductivity[]> {
+export async function reportDayProductivity(userId: string, range: DateRange): Promise<DayProductivity[]> {
   const { data, error } = await getSupabase().rpc("report_day_productivity", {
+    p_user_id: userId,
     p_start: range.start,
     p_end: range.end,
   });

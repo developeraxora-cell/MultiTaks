@@ -6,6 +6,7 @@ import { StatCard, ProgressBar } from "@/components/reports/StatCard";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getTask, getLogsInRange } from "@/lib/queries/tasks";
 import { formatTimeRange } from "@/lib/types";
+import { requireUser } from "@/lib/auth/server";
 import { reportTaskPeriod } from "@/lib/reports/calc";
 import {
   monthName,
@@ -34,9 +35,12 @@ export default async function TaskReportPage({
 }) {
   if (!isSupabaseConfigured()) return <SetupNotice />;
 
+  const session = await requireUser();
   const { taskId } = await params;
   const task = await getTask(taskId);
   if (!task) notFound();
+  // Solo el dueño o un admin pueden ver el reporte de la tarea.
+  if (session.role !== "admin" && task.user_id !== session.userId) notFound();
 
   const today = todayKey();
   const d = parseKey(today);

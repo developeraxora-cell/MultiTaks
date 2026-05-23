@@ -3,11 +3,12 @@ import "server-only";
 import { getSupabase } from "@/lib/supabase/server";
 import { logKey, type LogMap, type Task, type TaskLog } from "@/lib/types";
 
-/** Tareas no eliminadas (para gestión). Opcionalmente solo activas. */
-export async function listTasks(onlyActive = false): Promise<Task[]> {
+/** Tareas no eliminadas de un usuario. Opcionalmente solo activas. */
+export async function listTasks(userId: string, onlyActive = false): Promise<Task[]> {
   let query = getSupabase()
     .from("tasks")
     .select("*")
+    .eq("user_id", userId)
     .is("deleted_at", null)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
@@ -19,9 +20,9 @@ export async function listTasks(onlyActive = false): Promise<Task[]> {
   return (data ?? []) as Task[];
 }
 
-/** Tareas activas y vigentes — las que aparecen en el grid de seguimiento. */
-export function listActiveTasks(): Promise<Task[]> {
-  return listTasks(true);
+/** Tareas activas de un usuario — las del grid de seguimiento. */
+export function listActiveTasks(userId: string): Promise<Task[]> {
+  return listTasks(userId, true);
 }
 
 export async function getTask(id: string): Promise<Task | null> {

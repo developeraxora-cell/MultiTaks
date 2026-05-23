@@ -36,8 +36,8 @@ export function ViewSwitcher({
     router.push(`/tracker?view=${v}&date=${d}`);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="flex items-center justify-between gap-2 sm:justify-start">
         <button
           type="button"
           onClick={() => go(view, prevDate)}
@@ -46,7 +46,7 @@ export function ViewSwitcher({
         >
           <ChevronLeft size={16} />
         </button>
-        <span className="min-w-40 text-center text-sm font-medium capitalize">
+        <span className="flex-1 text-center text-sm font-medium capitalize sm:min-w-40 sm:flex-none">
           {periodLabel}
         </span>
         <button
@@ -59,13 +59,13 @@ export function ViewSwitcher({
         </button>
       </div>
 
-      <div className="inline-flex rounded-lg border border-border bg-surface p-0.5">
+      <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-border bg-surface p-0.5 sm:flex">
         {VIEWS.map((v) => (
           <button
             key={v.mode}
             type="button"
             onClick={() => go(v.mode, date)}
-            className={`rounded-md px-3 py-1 text-sm transition-colors ${
+            className={`rounded-md px-3 py-1.5 text-center text-sm transition-colors ${
               view === v.mode
                 ? "bg-surface-2 text-foreground"
                 : "text-muted hover:text-foreground"
