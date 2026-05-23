@@ -15,7 +15,7 @@ export default async function TasksPage() {
     .select("*")
     .eq("user_id", session.userId)
     .is("deleted_at", null)
-    .order("sort_order", { ascending: true })
+    .order("start_time", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
 

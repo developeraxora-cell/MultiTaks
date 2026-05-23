@@ -10,7 +10,7 @@ export async function listTasks(userId: string, onlyActive = false): Promise<Tas
     .select("*")
     .eq("user_id", userId)
     .is("deleted_at", null)
-    .order("sort_order", { ascending: true })
+    .order("start_time", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
 
   if (onlyActive) query = query.eq("is_active", true);
