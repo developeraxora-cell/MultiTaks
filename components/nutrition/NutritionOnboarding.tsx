@@ -144,9 +144,7 @@ export function NutritionOnboarding({ profile }: { profile: NutritionProfile | n
     if (targetStep === 4 && csvCount(form.frequent_foods) < 3) {
       return "Selecciona al menos 3 alimentos que consumes con frecuencia.";
     }
-    if (targetStep === 5 && csvCount(form.disliked_foods) < 3) {
-      return "Selecciona al menos 3 alimentos que no te gustan.";
-    }
+    // Paso "Lo que no te gusta" es opcional (sin mínimo).
     if (targetStep === 6 && csvCount(form.avoid_foods) < 3) {
       return "Selecciona al menos 3 alimentos que quieres evitar.";
     }
@@ -305,7 +303,7 @@ export function NutritionOnboarding({ profile }: { profile: NutritionProfile | n
 
         {step === 5 && (
           <div className="space-y-3">
-            <p className="text-sm text-muted">Marca al menos 3 alimentos que prefieres no ver en tus recomendaciones.</p>
+            <p className="text-sm text-muted">Marca los alimentos que prefieres no ver en tus recomendaciones <span className="text-muted/70">(opcional)</span>.</p>
             <FoodPicker value={form.disliked_foods} onChange={set("disliked_foods")} options={DISLIKED_FOOD_OPTIONS} />
           </div>
         )}
