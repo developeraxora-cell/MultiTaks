@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { getSupabase } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/server";
+import { todayKey } from "@/lib/date";
 
 /**
  * Marca/desmarca el cumplimiento de una tarea en una fecha concreta.
@@ -28,6 +29,9 @@ export async function toggleLog(
   if (session.role !== "admin" && task.user_id !== session.userId) {
     throw new Error("No autorizado");
   }
+  if (date > todayKey(session.timeZone)) {
+    throw new Error("No puedes marcar hábitos de fechas futuras");
+  }
 
   const { error } = await getSupabase()
     .from("task_logs")
@@ -37,7 +41,14 @@ export async function toggleLog(
     );
   if (error) throw new Error(error.message);
 
+  revalidatePath("/home");
   revalidatePath("/tracker");
   revalidatePath("/reports");
   revalidatePath("/admin/monitor");
+}
+
+/** Marca/desmarca usando la fecha real de la app en el momento del clic. */
+export async function toggleTodayLog(taskId: string, isCompleted: boolean): Promise<void> {
+  const session = await requireUser();
+  await toggleLog(taskId, todayKey(session.timeZone), isCompleted);
 }

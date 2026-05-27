@@ -2,6 +2,14 @@ import "server-only";
 
 import { getSupabase } from "@/lib/supabase/server";
 import type { DateRange } from "@/lib/date";
+import {
+  DEFAULT_HABIT_CATEGORY,
+  HABIT_CATEGORIES,
+  normalizeHabitCategory,
+  type HabitCategory,
+  type Task,
+  type TaskLog,
+} from "@/lib/types";
 
 export interface PeriodReport {
   completed: number;
@@ -27,6 +35,14 @@ export interface DayProductivity {
   d: string;
   completed: number;
   total: number;
+  pct: number;
+}
+
+export interface CategoryPerformance {
+  category: HabitCategory;
+  label: string;
+  completed: number;
+  possible: number;
   pct: number;
 }
 
@@ -97,6 +113,79 @@ export async function reportDayProductivity(userId: string, range: DateRange): P
     total: Number(r.total),
     pct: Number(r.pct),
   }));
+}
+
+const MS_DAY = 86_400_000;
+
+function dateToMs(key: string): number {
+  const [year, month, day] = key.split("-").map(Number);
+  return Date.UTC(year, month - 1, day);
+}
+
+function eligibleDays(start: string, end: string, today: string): number {
+  const cap = end < today ? end : today;
+  const days = Math.floor((dateToMs(cap) - dateToMs(start)) / MS_DAY) + 1;
+  return days > 0 ? days : 0;
+}
+
+export async function reportCategoryPerformance(
+  userId: string,
+  range: DateRange,
+  today: string,
+): Promise<CategoryPerformance[]> {
+  const { data: taskData, error: taskError } = await getSupabase()
+    .from("tasks")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .is("deleted_at", null);
+  if (taskError) throw new Error(taskError.message);
+
+  const tasks = (taskData ?? []) as Task[];
+  const stats = new Map<HabitCategory, { completed: number; possible: number }>();
+  for (const category of HABIT_CATEGORIES) {
+    stats.set(category.value, { completed: 0, possible: 0 });
+  }
+
+  const possiblePerTask = eligibleDays(range.start, range.end, today);
+  for (const task of tasks) {
+    const category = normalizeHabitCategory(task.category);
+    stats.get(category)!.possible += possiblePerTask;
+  }
+
+  if (tasks.length > 0) {
+    const { data: logData, error: logError } = await getSupabase()
+      .from("task_logs")
+      .select("*")
+      .in("task_id", tasks.map((task) => task.id))
+      .gte("date", range.start)
+      .lte("date", range.end)
+      .lte("date", today)
+      .eq("is_completed", true);
+    if (logError) throw new Error(logError.message);
+
+    const categoryByTask = new Map(
+      tasks.map((task) => [
+        task.id,
+        normalizeHabitCategory(task.category),
+      ]),
+    );
+    for (const log of (logData ?? []) as TaskLog[]) {
+      const category = categoryByTask.get(log.task_id) ?? DEFAULT_HABIT_CATEGORY;
+      stats.get(category)!.completed += 1;
+    }
+  }
+
+  return HABIT_CATEGORIES.map((category) => {
+    const row = stats.get(category.value)!;
+    return {
+      category: category.value,
+      label: category.label,
+      completed: row.completed,
+      possible: row.possible,
+      pct: row.possible > 0 ? Math.round((1000 * row.completed) / row.possible) / 10 : 0,
+    };
+  });
 }
 
 /**

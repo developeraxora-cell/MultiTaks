@@ -12,11 +12,25 @@ import { usePagedList } from "@/lib/use-paged-list";
 
 const field =
   "w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/30";
+const FALLBACK_TIME_ZONES = [
+  "America/Mexico_City",
+  "America/Lima",
+  "America/Bogota",
+  "America/Santiago",
+  "America/Argentina/Buenos_Aires",
+  "America/New_York",
+  "America/Los_Angeles",
+  "Europe/Madrid",
+];
 
 export function UsersManager({ users }: { users: Usuario[] }) {
   const [drawer, setDrawer] = useState(false);
   const [editUser, setEditUser] = useState<Usuario | null>(null);
   const [, startTransition] = useTransition();
+  const timeZones =
+    typeof Intl.supportedValuesOf === "function"
+      ? Intl.supportedValuesOf("timeZone")
+      : FALLBACK_TIME_ZONES;
 
   const act = (fn: () => Promise<void>, msg: string) =>
     startTransition(async () => {
@@ -84,6 +98,7 @@ export function UsersManager({ users }: { users: Usuario[] }) {
               <p className="flex items-center gap-1 truncate text-xs text-muted">
                 <AtSign size={11} /> {u.email}
               </p>
+              <p className="truncate text-xs text-muted">{u.time_zone}</p>
             </div>
             <div className="flex shrink-0 items-center gap-1">
               <IconBtn title="Editar" onClick={() => setEditUser(u)}>
@@ -137,6 +152,16 @@ export function UsersManager({ users }: { users: Usuario[] }) {
               <option value="admin">Administrador</option>
             </select>
           </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted">Zona horaria</label>
+            <select name="time_zone" defaultValue="America/Mexico_City" className={field}>
+              {timeZones.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </select>
+          </div>
           <button
             type="submit"
             className="w-full rounded-xl bg-accent py-2.5 text-sm font-semibold text-[#0f1623] shadow-lg shadow-accent/20 hover:brightness-105"
@@ -179,6 +204,16 @@ export function UsersManager({ users }: { users: Usuario[] }) {
                 placeholder="Dejar vacío para no cambiarla"
                 className={field}
               />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-muted">Zona horaria</label>
+              <select name="time_zone" defaultValue={editUser.time_zone} className={field}>
+                {timeZones.map((tz) => (
+                  <option key={tz} value={tz}>
+                    {tz}
+                  </option>
+                ))}
+              </select>
             </div>
             <button
               type="submit"

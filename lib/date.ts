@@ -23,16 +23,55 @@ const MONTHS_ES = [
 const WEEKDAYS_ES = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
 const pad = (n: number) => String(n).padStart(2, "0");
+const DEFAULT_APP_TIME_ZONE = "America/Mexico_City";
+
+export function appTimeZone(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_TIME_ZONE ||
+    process.env.APP_TIME_ZONE ||
+    DEFAULT_APP_TIME_ZONE
+  );
+}
+
+export function normalizeTimeZone(timeZone: string | null | undefined): string {
+  const value = timeZone?.trim() || appTimeZone();
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: value }).format(new Date());
+    return value;
+  } catch {
+    return appTimeZone();
+  }
+}
 
 /** Clave `YYYY-MM-DD` desde componentes locales. */
 export function dateKey(year: number, monthIndex0: number, day: number): string {
   return `${year}-${pad(monthIndex0 + 1)}-${pad(day)}`;
 }
 
-/** Clave de hoy en hora local. */
-export function todayKey(): string {
-  const d = new Date();
-  return dateKey(d.getFullYear(), d.getMonth(), d.getDate());
+/** Clave `YYYY-MM-DD` para un instante según una zona horaria explícita. */
+export function dateKeyInTimeZone(date: Date, timeZone = appTimeZone()): string {
+  const safeTimeZone = normalizeTimeZone(timeZone);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: safeTimeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const year = parts.find((p) => p.type === "year")?.value;
+  const month = parts.find((p) => p.type === "month")?.value;
+  const day = parts.find((p) => p.type === "day")?.value;
+
+  if (!year || !month || !day) {
+    throw new Error(`No se pudo calcular la fecha para la zona horaria ${safeTimeZone}`);
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
+/** Clave de hoy en la zona horaria de la app. */
+export function todayKey(timeZone = appTimeZone()): string {
+  return dateKeyInTimeZone(new Date(), timeZone);
 }
 
 /** Parsea `YYYY-MM-DD` a Date local (medianoche local). */

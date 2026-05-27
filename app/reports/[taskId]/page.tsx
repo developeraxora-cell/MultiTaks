@@ -42,7 +42,7 @@ export default async function TaskReportPage({
   // Solo el dueño o un admin pueden ver el reporte de la tarea.
   if (session.role !== "admin" && task.user_id !== session.userId) notFound();
 
-  const today = todayKey();
+  const today = todayKey(session.timeZone);
   const d = parseKey(today);
   const year = d.getFullYear();
   const monthIndex = d.getMonth();

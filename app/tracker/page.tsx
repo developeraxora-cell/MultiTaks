@@ -51,14 +51,13 @@ export default async function TrackerPage({
   const view = (["daily", "weekly", "monthly", "annual"].includes(sp.view ?? "")
     ? sp.view
     : "monthly") as ViewMode;
-  const anchor = sp.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : todayKey();
+  const today = todayKey(session.timeZone);
+  const anchor = sp.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : today;
 
   const anchorDate = parseKey(anchor);
   const year = anchorDate.getFullYear();
   const monthIndex = anchorDate.getMonth();
   const day = anchorDate.getDate();
-  const today = todayKey();
-
   const tasks = await listActiveTasks(session.userId);
 
   // ----- Vista anual: resumen tareas × meses -----

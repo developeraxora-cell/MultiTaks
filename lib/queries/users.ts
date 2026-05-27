@@ -3,7 +3,7 @@ import "server-only";
 import { getSupabase } from "@/lib/supabase/server";
 import type { Usuario } from "@/lib/types";
 
-const PUBLIC_COLS = "id, email, full_name, role, is_active, created_at, updated_at";
+const PUBLIC_COLS = "id, email, full_name, role, time_zone, is_active, created_at, updated_at";
 
 /** Lista de usuarios (sin password_hash). Solo para admin. */
 export async function listUsuarios(): Promise<Usuario[]> {

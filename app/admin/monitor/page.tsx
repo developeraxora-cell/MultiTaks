@@ -24,16 +24,15 @@ export default async function MonitorPage({
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
 
-  const today = todayKey();
-  const d = parseKey(today);
-  const wk = weekRange(today);
-  const mo = monthRange(d.getFullYear(), d.getMonth());
-
   // Solo se calcula el cumplimiento de los usuarios de ESTA página.
   const { rows: users, total } = await listUsuariosPaged(page, PER_PAGE);
   const pageCount = Math.max(1, Math.ceil(total / PER_PAGE));
   const rows = await Promise.all(
     users.map(async (u) => {
+      const today = todayKey(u.time_zone);
+      const d = parseKey(today);
+      const wk = weekRange(today);
+      const mo = monthRange(d.getFullYear(), d.getMonth());
       const [day, week, month] = await Promise.all([
         reportOverall(u.id, { start: today, end: today }),
         reportOverall(u.id, wk),

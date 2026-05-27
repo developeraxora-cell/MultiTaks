@@ -9,6 +9,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth/server";
 import { getUsuario } from "@/lib/queries/users";
 import { createTask } from "@/lib/actions/tasks";
+import { HABIT_CATEGORIES } from "@/lib/types";
 import {
   reportOverall,
   reportTaskRanking,
@@ -32,7 +33,7 @@ export default async function MonitorDetailPage({
   const user = await getUsuario(userId);
   if (!user) notFound();
 
-  const today = todayKey();
+  const today = todayKey(user.time_zone);
   const d = parseKey(today);
   const year = d.getFullYear();
   const monthIndex = d.getMonth();
@@ -114,6 +115,20 @@ export default async function MonitorDetailPage({
             placeholder="Título del hábito"
             className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm sm:col-span-2"
           />
+          <label className="sm:col-span-2">
+            <span className="mb-1 block text-xs text-muted">Tipo de hábito</span>
+            <select
+              name="category"
+              defaultValue="desarrollo_personal"
+              className="w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground"
+            >
+              {HABIT_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="flex items-center gap-2 text-xs text-muted">
             Desde
             <input name="start_time" type="time" className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground" />

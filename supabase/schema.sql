@@ -17,10 +17,13 @@ create table if not exists public.usuarios (
   password_hash text not null,
   full_name     text not null,
   role          text not null default 'user' check (role in ('admin', 'user')),
+  time_zone     text not null default 'America/Mexico_City',
   is_active     boolean not null default true,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );
+
+alter table public.usuarios add column if not exists time_zone text not null default 'America/Mexico_City';
 
 -- ----------------------------------------------------------------------------
 --  Tabla: tasks (hábitos/tareas permanentes, por usuario)
@@ -30,6 +33,8 @@ create table if not exists public.tasks (
   user_id     uuid not null references public.usuarios(id) on delete cascade,
   assigned_by uuid references public.usuarios(id) on delete set null, -- admin que asignó (null si propia)
   title       text not null,
+  category    text not null default 'desarrollo_personal'
+              check (category in ('amigos', 'salud', 'dinero', 'amor', 'familia', 'profesion', 'desarrollo_personal', 'ocio')),
   description text,
   goal        text,                              -- meta libre, ej. "5 días/semana"
   start_time  time,                              -- hora de inicio (opcional)
@@ -46,6 +51,10 @@ alter table public.tasks add column if not exists start_time time;
 alter table public.tasks add column if not exists end_time   time;
 alter table public.tasks add column if not exists user_id     uuid references public.usuarios(id) on delete cascade;
 alter table public.tasks add column if not exists assigned_by uuid references public.usuarios(id) on delete set null;
+alter table public.tasks add column if not exists category text not null default 'desarrollo_personal';
+alter table public.tasks drop constraint if exists tasks_category_check;
+alter table public.tasks add constraint tasks_category_check
+  check (category in ('amigos', 'salud', 'dinero', 'amor', 'familia', 'profesion', 'desarrollo_personal', 'ocio'));
 
 -- ----------------------------------------------------------------------------
 --  Tabla: task_logs (cumplimiento diario, 1 fila por (tarea, fecha))
@@ -67,6 +76,7 @@ create index if not exists task_logs_date_idx          on public.task_logs (date
 create index if not exists task_logs_task_date_idx     on public.task_logs (task_id, date);
 create index if not exists task_logs_user_idx          on public.task_logs (user_id);
 create index if not exists tasks_user_idx              on public.tasks (user_id);
+create index if not exists tasks_category_idx          on public.tasks (category);
 create index if not exists tasks_active_idx            on public.tasks (is_active) where deleted_at is null;
 
 -- ----------------------------------------------------------------------------

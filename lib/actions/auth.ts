@@ -21,7 +21,12 @@ export async function signIn(_prev: LoginState, formData: FormData): Promise<Log
   const ok = await verifyPassword(password, user.password_hash);
   if (!ok) return { error: "Credenciales inválidas" };
 
-  await createSessionCookie({ userId: user.id, role: user.role, name: user.full_name });
+  await createSessionCookie({
+    userId: user.id,
+    role: user.role,
+    name: user.full_name,
+    timeZone: user.time_zone,
+  });
   redirect("/home");
 }
 

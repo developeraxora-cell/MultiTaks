@@ -3,26 +3,26 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Check, Clock, PartyPopper } from "lucide-react";
-import { toggleLog } from "@/lib/actions/logs";
-import { formatTimeRange } from "@/lib/types";
+import { toggleTodayLog } from "@/lib/actions/logs";
+import { DEFAULT_HABIT_CATEGORY, HABIT_CATEGORIES, formatTimeRange, type HabitCategory } from "@/lib/types";
 import { StatCard } from "@/components/reports/StatCard";
+import { HabitCategoryRadar } from "@/components/reports/HabitCategoryRadar";
 
 interface Item {
   id: string;
   title: string;
+  category: HabitCategory | null;
   start_time: string | null;
   end_time: string | null;
 }
 
 export function DailyChecklist({
   tasks,
-  date,
   initialDone,
   weekPct,
   monthPct,
 }: {
   tasks: Item[];
-  date: string;
   initialDone: string[];
   weekPct: number;
   monthPct: number;
@@ -38,7 +38,7 @@ export function DailyChecklist({
   function persist(id: string, next: boolean) {
     startTransition(async () => {
       try {
-        await toggleLog(id, date, next);
+        await toggleTodayLog(id, next);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "No se pudo guardar");
         setDone((d) => {
@@ -77,6 +77,16 @@ export function DailyChecklist({
 
   const pending = tasks.filter((t) => !done.has(t.id));
   const completedList = tasks.filter((t) => done.has(t.id));
+  const categoryData = HABIT_CATEGORIES.map((category) => {
+    const categoryTasks = tasks.filter((task) => (task.category ?? DEFAULT_HABIT_CATEGORY) === category.value);
+    const categoryDone = categoryTasks.filter((task) => done.has(task.id)).length;
+    return {
+      label: category.label,
+      completed: categoryDone,
+      possible: categoryTasks.length,
+      pct: categoryTasks.length > 0 ? Math.round((100 * categoryDone) / categoryTasks.length) : 0,
+    };
+  });
 
   return (
     <div className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-6">
@@ -104,6 +114,10 @@ export function DailyChecklist({
           <StatCard label="Semana" value={`${weekPct}%`} accent="#38bdf8" />
           <StatCard label="Mes" value={`${monthPct}%`} accent="#a855f7" />
         </div>
+        <section className="rounded-2xl border border-border bg-surface p-4">
+          <h2 className="mb-2 text-sm font-semibold text-muted">Balance de hoy</h2>
+          <HabitCategoryRadar data={categoryData} height={260} />
+        </section>
       </div>
 
       <div className="space-y-6 lg:col-span-2">

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { getSupabase } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/server";
+import { DEFAULT_HABIT_CATEGORY, isHabitCategory } from "@/lib/types";
 
 function revalidateAll() {
   revalidatePath("/tracker");
@@ -28,11 +29,14 @@ export async function createTask(formData: FormData): Promise<void> {
 
   const target = str(formData.get("target_user_id"));
   const assigning = target && session.role === "admin" && target !== session.userId;
+  const rawCategory = str(formData.get("category"));
+  const category = isHabitCategory(rawCategory) ? rawCategory : DEFAULT_HABIT_CATEGORY;
 
   const { error } = await getSupabase().from("tasks").insert({
     user_id: assigning ? target : session.userId,
     assigned_by: assigning ? session.userId : null,
     title,
+    category,
     start_time: str(formData.get("start_time")) || null,
     end_time: str(formData.get("end_time")) || null,
   });
@@ -47,11 +51,14 @@ export async function updateTask(formData: FormData): Promise<void> {
   const title = str(formData.get("title"));
   if (!id) throw new Error("Falta el id de la tarea");
   if (!title) throw new Error("El título es obligatorio");
+  const rawCategory = str(formData.get("category"));
+  const category = isHabitCategory(rawCategory) ? rawCategory : DEFAULT_HABIT_CATEGORY;
 
   let query = getSupabase()
     .from("tasks")
     .update({
       title,
+      category,
       start_time: str(formData.get("start_time")) || null,
       end_time: str(formData.get("end_time")) || null,
     })

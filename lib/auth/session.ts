@@ -13,6 +13,7 @@ export interface SessionData {
   userId: string;
   role: Role;
   name: string;
+  timeZone: string;
 }
 
 function secretKey(): Uint8Array {
@@ -24,7 +25,7 @@ function secretKey(): Uint8Array {
 }
 
 export async function signSession(data: SessionData): Promise<string> {
-  return new SignJWT({ role: data.role, name: data.name })
+  return new SignJWT({ role: data.role, name: data.name, timeZone: data.timeZone })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(data.userId)
     .setIssuedAt()
@@ -41,6 +42,7 @@ export async function verifySession(token: string | undefined): Promise<SessionD
       userId: payload.sub,
       role: (payload.role as Role) ?? "user",
       name: (payload.name as string) ?? "",
+      timeZone: (payload.timeZone as string) ?? "America/Mexico_City",
     };
   } catch {
     return null;

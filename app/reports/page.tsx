@@ -3,6 +3,7 @@ import { SetupNotice } from "@/components/SetupNotice";
 import { StatCard, ProgressBar } from "@/components/reports/StatCard";
 import { RankingChart } from "@/components/reports/RankingChart";
 import { ProductivityChart } from "@/components/reports/ProductivityChart";
+import { HabitCategoryRadar } from "@/components/reports/HabitCategoryRadar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/server";
@@ -10,6 +11,7 @@ import {
   reportOverall,
   reportTaskRanking,
   reportDayProductivity,
+  reportCategoryPerformance,
   computeStreaks,
   bestAndWorstDay,
 } from "@/lib/reports/calc";
@@ -22,7 +24,7 @@ export default async function ReportsPage() {
 
   const session = await requireUser();
   const uid = session.userId;
-  const today = todayKey();
+  const today = todayKey(session.timeZone);
   const d = parseKey(today);
   const year = d.getFullYear();
   const monthIndex = d.getMonth();
@@ -31,13 +33,16 @@ export default async function ReportsPage() {
   const mo = monthRange(year, monthIndex);
   const yr = yearRange(year);
 
-  const [day, week, month, yearOverall, ranking, dayProd] = await Promise.all([
+  const [day, week, month, yearOverall, ranking, dayProd, categoryDay, categoryWeek, categoryMonth] = await Promise.all([
     reportOverall(uid, { start: today, end: today }),
     reportOverall(uid, wk),
     reportOverall(uid, mo),
     reportOverall(uid, yr),
     reportTaskRanking(uid, mo),
     reportDayProductivity(uid, yr),
+    reportCategoryPerformance(uid, { start: today, end: today }, today),
+    reportCategoryPerformance(uid, wk, today),
+    reportCategoryPerformance(uid, mo, today),
   ]);
 
   const streaks = computeStreaks(dayProd);
@@ -88,6 +93,25 @@ export default async function ReportsPage() {
           Productividad diaria · {monthName(monthIndex)} {year}
         </h2>
         <ProductivityChart data={monthDays.map((p) => ({ d: p.d, pct: p.pct }))} />
+      </section>
+
+      {/* Áreas de hábitos */}
+      <section className="rounded-xl border border-border bg-surface p-5">
+        <h2 className="mb-4 text-sm font-semibold">Balance por tipo de hábito</h2>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div>
+            <h3 className="mb-2 text-center text-xs font-semibold text-muted">Diario</h3>
+            <HabitCategoryRadar data={categoryDay} height={270} color="#2dd4bf" />
+          </div>
+          <div>
+            <h3 className="mb-2 text-center text-xs font-semibold text-muted">Semanal</h3>
+            <HabitCategoryRadar data={categoryWeek} height={270} color="#38bdf8" />
+          </div>
+          <div>
+            <h3 className="mb-2 text-center text-xs font-semibold text-muted">Mensual</h3>
+            <HabitCategoryRadar data={categoryMonth} height={270} color="#f97316" />
+          </div>
+        </div>
       </section>
 
       {/* Ranking de hábitos (mes) */}

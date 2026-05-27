@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Nav } from "@/components/Nav";
 import { getSession } from "@/lib/auth/server";
+import { getNutritionProfileByUserId } from "@/lib/queries/nutrition";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +28,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getSession();
+  const nutritionProfile =
+    session && isSupabaseConfigured()
+      ? await getNutritionProfileByUserId(session.userId)
+      : null;
+  const fitnessUnlocked = Boolean(nutritionProfile?.onboarding_completed);
 
   return (
     <html
@@ -33,7 +40,9 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-foreground">
-        {session && <Nav name={session.name} role={session.role} />}
+        {session && (
+          <Nav name={session.name} role={session.role} fitnessUnlocked={fitnessUnlocked} />
+        )}
         <div className={session ? "lg:pl-64" : ""}>
           <main className="min-h-screen">{children}</main>
         </div>

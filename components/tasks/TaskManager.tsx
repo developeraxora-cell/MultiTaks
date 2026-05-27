@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, X, Clock, Search } from "lucide-react";
 import { createTask, updateTask, deleteTask } from "@/lib/actions/tasks";
-import { formatTimeRange, type Task } from "@/lib/types";
+import { HABIT_CATEGORIES, formatTimeRange, habitCategoryLabel, type Task } from "@/lib/types";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { RightDrawer } from "@/components/ui/RightDrawer";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -90,6 +90,16 @@ export function TaskManager({ tasks }: { tasks: Task[] }) {
             >
               <input type="hidden" name="id" value={task.id} />
               <input name="title" required defaultValue={task.title} className={`${field} sm:col-span-2`} />
+              <label className="sm:col-span-2">
+                <span className="mb-1 block text-xs text-muted">Tipo de hábito</span>
+                <select name="category" defaultValue={task.category ?? "desarrollo_personal"} className={field}>
+                  {HABIT_CATEGORIES.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <label className="flex items-center gap-2 text-xs text-muted">
                 Desde
                 <input name="start_time" type="time" defaultValue={task.start_time?.slice(0, 5) ?? ""} className={`${field} flex-1`} />
@@ -118,6 +128,7 @@ export function TaskManager({ tasks }: { tasks: Task[] }) {
             >
               <div className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{task.title}</span>
+                <p className="mt-0.5 text-xs text-muted">{habitCategoryLabel(task.category)}</p>
                 {formatTimeRange(task.start_time, task.end_time) && (
                   <p className="mt-0.5 flex items-center gap-1 text-xs text-accent">
                     <Clock size={12} /> {formatTimeRange(task.start_time, task.end_time)}
@@ -155,6 +166,16 @@ export function TaskManager({ tasks }: { tasks: Task[] }) {
           <div>
             <label className="mb-1 block text-xs text-muted">Título</label>
             <input name="title" required placeholder="Ej. Hacer ejercicio" className={field} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-muted">Tipo de hábito</label>
+            <select name="category" defaultValue="desarrollo_personal" className={field}>
+              {HABIT_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

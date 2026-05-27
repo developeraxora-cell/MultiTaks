@@ -1,10 +1,38 @@
 export type Role = "admin" | "user";
 
+export const HABIT_CATEGORIES = [
+  { value: "amigos", label: "Amigos" },
+  { value: "salud", label: "Salud" },
+  { value: "dinero", label: "Dinero" },
+  { value: "amor", label: "Amor" },
+  { value: "familia", label: "Familia" },
+  { value: "profesion", label: "Profesión" },
+  { value: "desarrollo_personal", label: "Desarrollo personal" },
+  { value: "ocio", label: "Ocio" },
+] as const;
+
+export type HabitCategory = (typeof HABIT_CATEGORIES)[number]["value"];
+
+export const DEFAULT_HABIT_CATEGORY: HabitCategory = "desarrollo_personal";
+
+export function isHabitCategory(value: string): value is HabitCategory {
+  return HABIT_CATEGORIES.some((category) => category.value === value);
+}
+
+export function habitCategoryLabel(value: string | null | undefined): string {
+  return HABIT_CATEGORIES.find((category) => category.value === value)?.label ?? "Desarrollo personal";
+}
+
+export function normalizeHabitCategory(value: string | null | undefined): HabitCategory {
+  return value && isHabitCategory(value) ? value : DEFAULT_HABIT_CATEGORY;
+}
+
 export interface Usuario {
   id: string;
   email: string;
   full_name: string;
   role: Role;
+  time_zone: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -15,6 +43,7 @@ export interface Task {
   user_id: string;
   assigned_by: string | null;
   title: string;
+  category: HabitCategory | null;
   description: string | null;
   goal: string | null;
   start_time: string | null; // HH:MM, hora de inicio (opcional)
