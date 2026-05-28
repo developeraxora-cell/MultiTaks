@@ -137,10 +137,7 @@ export function NutritionOnboarding({ profile }: { profile: NutritionProfile | n
       ].filter(Boolean);
       if (missing.length > 0) return `Faltan campos por completar: ${missing.join(", ")}.`;
     }
-    if (targetStep === 3) {
-      if (csvCount(form.favorite_foods) < 3) return "Selecciona al menos 3 comidas favoritas.";
-      if (!form.food_style) return "Falta seleccionar el tipo de comida preferida.";
-    }
+    // Paso "Comidas favoritas" es opcional.
     if (targetStep === 4 && csvCount(form.frequent_foods) < 3) {
       return "Selecciona al menos 3 alimentos que consumes con frecuencia.";
     }
@@ -286,10 +283,10 @@ export function NutritionOnboarding({ profile }: { profile: NutritionProfile | n
 
         {step === 3 && (
           <div className="space-y-3">
-            <p className="text-sm text-muted">Elige al menos 3 comidas que sí disfrutas y podrían entrar en tu plan.</p>
+            <p className="text-sm text-muted">Puedes elegir comidas que sí disfrutas para personalizar tu plan. Este paso es opcional.</p>
             <FoodPicker value={form.favorite_foods} onChange={set("favorite_foods")} options={FAVORITE_FOOD_OPTIONS} />
             <div className="pt-2">
-              <SelectField label="Tipo de comida preferida" value={form.food_style} onChange={set("food_style")} options={optList(FOOD_STYLE_LABELS)} />
+              <SelectField label="Tipo de comida preferida (opcional)" value={form.food_style} onChange={set("food_style")} options={optList(FOOD_STYLE_LABELS)} />
             </div>
           </div>
         )}
