@@ -230,6 +230,7 @@ export interface AnalyzeResult {
 export async function analyzeMealImage(fd: FormData): Promise<AnalyzeResult> {
   const session = await requireUser();
   const file = fd.get("image");
+  const note = strOrNull(fd.get("note"));
 
   let image_url: string | null = null;
   let image_path: string | null = null;
@@ -255,14 +256,14 @@ export async function analyzeMealImage(fd: FormData): Promise<AnalyzeResult> {
     image_url = uploaded.url;
   }
 
-  const analysis = await analyzeMeal({ bytes, name, dataUrl });
+  const analysis = await analyzeMeal({ bytes, name, dataUrl, note });
 
   // Auditoría.
   await getSupabase().from("ai_nutrition_requests").insert({
     user_id: session.userId,
     request_type: "meal_analysis",
     is_mock: !isAiConfigured(),
-    request_payload: { image_provider: "cloudinary", image_path, bytes },
+    request_payload: { image_provider: "cloudinary", image_path, bytes, note },
     response_payload: analysis,
   });
 

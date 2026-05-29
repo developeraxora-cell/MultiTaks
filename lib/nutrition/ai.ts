@@ -265,6 +265,7 @@ export async function analyzeMeal(image: {
   bytes: number;
   name: string;
   dataUrl?: string | null; // data:<mime>;base64,... — necesario para visión real
+  note?: string | null; // descripción opcional del usuario para refinar el análisis
 }): Promise<MealAnalysis> {
   if (isVisionConfigured() && image.dataUrl) {
     return callRealModelMeal(image);
@@ -438,8 +439,13 @@ async function callRealModelMeal(image: {
   bytes: number;
   name: string;
   dataUrl?: string | null;
+  note?: string | null;
 }): Promise<MealAnalysis> {
   try {
+    const note = image.note?.trim();
+    const noteBlock = note
+      ? `\n\nDescripción del usuario sobre la comida (úsala como pista principal junto con la imagen; si hay contradicción, prioriza la descripción del usuario): "${note}"`
+      : "";
     const content = await chatCompletion(
       VISION_MODEL!,
       [
@@ -456,7 +462,8 @@ async function callRealModelMeal(image: {
                 "micronutrients (objeto de string:nivel), " +
                 "nutrition_quality ('muy_baja'|'baja'|'media'|'buena'|'muy_buena'), " +
                 "nutrition_quality_score (0-100), ai_analysis (string), ai_recommendation (string). " +
-                "Los valores son aproximados.",
+                "Los valores son aproximados." +
+                noteBlock,
             },
             { type: "image_url", image_url: { url: image.dataUrl } },
           ],

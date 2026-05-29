@@ -17,6 +17,7 @@ export function RegisterMeal({ today }: { today: string }) {
   const [phase, setPhase] = useState<Phase>("select");
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [note, setNote] = useState("");
   const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -36,6 +37,7 @@ export function RegisterMeal({ today }: { today: string }) {
     }
     const fd = new FormData();
     fd.set("image", file);
+    if (note.trim()) fd.set("note", note.trim());
     setPhase("analyzing");
     startTransition(async () => {
       try {
@@ -54,6 +56,7 @@ export function RegisterMeal({ today }: { today: string }) {
     setResult(null);
     setFile(null);
     setPreview(null);
+    setNote("");
     if (fileInput.current) fileInput.current.value = "";
   }
 
@@ -68,6 +71,7 @@ export function RegisterMeal({ today }: { today: string }) {
     fd.set("nutrition_quality_score", String(result.analysis.nutrition_quality_score));
     fd.set("ai_analysis", result.analysis.ai_analysis);
     fd.set("ai_recommendation", result.analysis.ai_recommendation);
+    if (note.trim()) fd.set("user_note", note.trim());
     startTransition(async () => {
       try {
         await createMealLog(fd);
@@ -101,6 +105,22 @@ export function RegisterMeal({ today }: { today: string }) {
             <Camera size={36} className="text-muted" />
             <p className="mt-2 text-sm text-muted">Toma o sube una foto de tu plato</p>
           </div>
+        )}
+
+        {phase !== "review" && (
+          <label className="mt-4 block">
+            <span className="mb-1 block text-xs text-muted">
+              Descripción de la comida <span className="text-muted/70">(opcional)</span>
+            </span>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+              placeholder="Ej.: arroz con pollo guisado y ensalada, porción mediana, con aceite de oliva..."
+              disabled={phase === "analyzing"}
+              className="w-full resize-y rounded-xl border border-border bg-surface-2 px-3.5 py-2.5 text-sm placeholder:text-muted/60 disabled:opacity-60"
+            />
+          </label>
         )}
 
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
