@@ -15,6 +15,7 @@ import {
   History,
   TrendingUp,
   MessageCircle,
+  MessageCircleHeart,
   User,
   Menu,
   X,
@@ -31,6 +32,7 @@ const BASE_LINKS = [
   { href: "/tracker", label: "Seguimiento", icon: CalendarCheck },
   { href: "/tasks", label: "Mis hábitos", icon: ListTodo },
   { href: "/reports", label: "Reportes", icon: BarChart3 },
+  { href: "/conversando-ia", label: "Conversando IA", icon: MessageCircleHeart },
   {
     href: "/nutricion",
     label: "Fitness",
