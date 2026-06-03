@@ -11,6 +11,8 @@ import {
   Users,
   Activity,
   Salad,
+  Dumbbell,
+  BookOpen,
   LayoutDashboard,
   History,
   TrendingUp,
@@ -43,6 +45,17 @@ const BASE_LINKS = [
       { href: "/nutricion/progreso", label: "Progreso", icon: TrendingUp },
       { href: "/nutricion/chat", label: "Chat IA", icon: MessageCircle },
       { href: "/nutricion/perfil", label: "Perfil", icon: User },
+    ],
+  },
+  {
+    href: "/gimnasio",
+    label: "Gimnasio",
+    icon: Dumbbell,
+    children: [
+      { href: "/gimnasio/rutinas", label: "Rutinas", icon: Dumbbell },
+      { href: "/gimnasio/ejercicios", label: "Ejercicios", icon: BookOpen },
+      { href: "/gimnasio/historial", label: "Historial", icon: History },
+      { href: "/gimnasio/coach", label: "Coach IA", icon: MessageCircle },
     ],
   },
 ];

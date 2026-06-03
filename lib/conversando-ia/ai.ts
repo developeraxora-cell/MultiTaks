@@ -28,24 +28,35 @@ async function chatCompletion(messages: ChatMessage[], json = false): Promise<st
   const url = `${BASE_URL!.replace(/\/$/, "")}/chat/completions`;
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (API_KEY) headers.Authorization = `Bearer ${API_KEY}`;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      model: MODEL_NAME,
-      messages,
-      stream: false,
-      temperature: optsTemperature(json),
-      ...(json ? { response_format: { type: "json_object" } } : {}),
-    }),
-    signal: AbortSignal.timeout(120_000),
+  const body = JSON.stringify({
+    model: MODEL_NAME,
+    messages,
+    stream: false,
+    temperature: optsTemperature(json),
+    ...(json ? { response_format: { type: "json_object" } } : {}),
   });
-  if (!res.ok) throw new Error(`IA respondió ${res.status}: ${await res.text()}`);
-  const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Respuesta de IA vacía");
-  return content;
+
+  // Reintenta una vez ante fallo de red/timeout (cold start de la función serverless).
+  // Timeout < maxDuration de Vercel para fallar a mock con tiempo, no morir sin respuesta.
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        body,
+        signal: AbortSignal.timeout(12_000),
+      });
+      if (!res.ok) throw new Error(`IA respondió ${res.status}: ${await res.text()}`);
+      const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) throw new Error("Respuesta de IA vacía");
+      return content;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Fallo al contactar la IA");
 }
 
 function optsTemperature(json: boolean): number {

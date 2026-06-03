@@ -3,8 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Nav } from "@/components/Nav";
+import { ActiveWorkoutTimer } from "@/components/gym/ActiveWorkoutTimer";
 import { getSession } from "@/lib/auth/server";
 import { getNutritionProfileByUserId } from "@/lib/queries/nutrition";
+import { getActiveWorkoutTimer } from "@/lib/queries/gym";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 const geistSans = Geist({
@@ -33,6 +35,8 @@ export default async function RootLayout({
       ? await getNutritionProfileByUserId(session.userId)
       : null;
   const fitnessUnlocked = Boolean(nutritionProfile?.onboarding_completed);
+  const activeWorkout =
+    session && isSupabaseConfigured() ? await getActiveWorkoutTimer(session.userId) : null;
 
   return (
     <html
@@ -46,6 +50,14 @@ export default async function RootLayout({
         <div className={session ? "lg:pl-64" : ""}>
           <main className="min-h-screen">{children}</main>
         </div>
+        {activeWorkout && (
+          <ActiveWorkoutTimer
+            sessionId={activeWorkout.id}
+            startedAt={activeWorkout.started_at}
+            estimatedMinutes={activeWorkout.estimated_minutes}
+            routineName={activeWorkout.routine_name}
+          />
+        )}
         <Toaster
           theme="dark"
           position="top-right"

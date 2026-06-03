@@ -119,6 +119,54 @@ export async function uploadMealImageToCloudinary(input: {
   };
 }
 
+export async function uploadExerciseImageToCloudinary(input: {
+  buffer: Buffer;
+  mime: string;
+  userId: string;
+  fileName: string;
+}): Promise<UploadedImage> {
+  const cfg = assertCloudinaryConfig();
+  const timestamp = Math.floor(Date.now() / 1000);
+  const baseFolder = process.env.CLOUDINARY_GYM_FOLDER?.trim() || "gym/exercises";
+  const folder = `${baseFolder}/${input.userId}`;
+  const publicId = `${timestamp}-${sanitizePublicIdPart(input.fileName || "exercise")}`;
+  const params = { folder, public_id: publicId, timestamp };
+  const signature = signParams(params, cfg.apiSecret);
+
+  const arrayBuffer = new ArrayBuffer(input.buffer.byteLength);
+  new Uint8Array(arrayBuffer).set(input.buffer);
+
+  const body = new FormData();
+  body.set("file", new Blob([arrayBuffer], { type: input.mime }), input.fileName || "exercise.jpg");
+  body.set("api_key", cfg.apiKey);
+  body.set("timestamp", String(timestamp));
+  body.set("folder", folder);
+  body.set("public_id", publicId);
+  body.set("signature", signature);
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cfg.cloudName}/image/upload`, {
+    method: "POST",
+    body,
+  });
+  const json = (await response.json()) as CloudinaryUploadResponse & CloudinaryErrorResponse;
+
+  if (!response.ok) {
+    throw new Error(`No se pudo subir la imagen a Cloudinary: ${json.error?.message ?? response.statusText}`);
+  }
+
+  return {
+    url: json.secure_url,
+    publicId: json.public_id,
+    metadata: {
+      width: json.width ?? null,
+      height: json.height ?? null,
+      format: json.format ?? null,
+      bytes: json.bytes ?? null,
+      provider: "cloudinary",
+    },
+  };
+}
+
 export async function deleteCloudinaryImage(publicId: string): Promise<void> {
   if (!publicId || !isCloudinaryConfigured()) return;
 

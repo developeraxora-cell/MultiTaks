@@ -13,6 +13,8 @@ import {
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+// Las server actions del chat llaman a OpenAI; damos margen para el cold start.
+export const maxDuration = 30;
 
 export default async function ConversandoIaPage() {
   if (!isSupabaseConfigured()) return <SetupNotice />;
